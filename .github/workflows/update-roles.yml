@@ -1,65 +1,42 @@
 # 工作流程名稱
 name: Update roles.json and push to Hugging Face
 
-# 觸發工作流程的事件
 on:
-  # 允許手動從 GitHub Actions 頁面觸發
   workflow_dispatch:
-  # 允許透過 repository dispatch 事件觸發
   repository_dispatch:
     types: [update-roles-json]
 
-# 定義工作
 jobs:
   download-and-update:
-    # 指定運行的虛擬環境
     runs-on: ubuntu-latest
-    # 設定工作所需的權限
     permissions:
-      # 需要寫入權限才能將變更推送回儲存庫
       contents: write
 
-    # 工作中的步驟
     steps:
-      # 步驟 1: 拉取儲存庫的最新程式碼
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 步驟 2: 從 Google Drive 下載最新的 roles.json 檔案
-      # 使用 curl 指令下載檔案並重新命名為 roles.json
       - name: Download roles.json from Google Drive
         run: |
           curl -L -o roles.json 'https://drive.google.com/uc?export=download&id=19Qa3RRQXOJBKMPsvQB994ig0UJSpQkJP'
 
-      # 步驟 3: 提交 roles.json 的變更並推送到 GitHub 和 Hugging Face
       - name: Commit and Push changes
         env:
-          # 從 Secrets 讀取 Hugging Face 的存取權杖
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          # 設定 Git 的使用者名稱和電子郵件
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
-          # 將 roles.json 加入 Git 的暫存區
+
           git add roles.json
-          
-          # 檢查暫存區是否有檔案變更。`--quiet` 參數讓 git diff 在有變更時返回 1，無變更時返回 0
-          # `!` 將回傳值反轉，因此當有變更時，條件成立
+
           if ! git diff --staged --quiet; then
             echo "偵測到檔案變更，正在提交並推送..."
-            
-            # 建立一個新的 commit
+
             git commit -m "Auto update roles.json from Google Drive"
-            
-            # 將 commit 推送到 GitHub 的 main 分支
+            git pull --rebase origin main
             git push
-            
-            # 新增 Hugging Face Space 的遠端儲存庫
-            # `|| true` 表示如果這個指令失敗（例如遠端已存在），則忽略錯誤並繼續執行
+
             git remote add hf https://user:$HF_TOKEN@huggingface.co/spaces/wan-yun/simulated-patient-chat || true
-            
-            # 將最新的 commit 強制推送到 Hugging Face Space 的 main 分支
             git push hf HEAD:main --force
           else
             echo "沒有偵測到檔案變更，無需提交。"
