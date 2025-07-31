@@ -7,6 +7,7 @@ on:
 jobs:
   download-and-update:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -14,7 +15,7 @@ jobs:
       - name: Install gdown
         run: pip install gdown
 
-      - name: Download roles.json using GDRIVE_FILE_ID
+      - name: Download roles.json from Google Drive
         run: |
           gdown https://drive.google.com/uc?id=${{ secrets.GDRIVE_FILE_ID }} -O roles.json
 
