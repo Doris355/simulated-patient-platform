@@ -19,7 +19,7 @@ jobs:
         run: |
           curl -L -o roles.json 'https://drive.google.com/uc?export=download&id=19Qa3RRQXOJBKMPsvQB994ig0UJSpQkJP'
 
-      - name: Commit and Push changes
+      - name: Commit and Push changes (always push)
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
@@ -28,13 +28,10 @@ jobs:
 
           git add roles.json
 
-          if ! git diff --staged --quiet; then
-            echo "有變更，提交並推送..."
-            git commit -m "Auto update roles.json from Google Drive"
-            git push
+          # 即使沒有變更也不會報錯
+          git commit -m "Auto update roles.json from Google Drive" || echo "No changes to commit."
+          git push || echo "No changes to push."
 
-            git remote add hf https://user:$HF_TOKEN@huggingface.co/spaces/wan-yun/simulated-patient-chat || true
-            git push hf HEAD:main --force
-          else
-            echo "沒有變更，不提交。"
-          fi  # ← ✅ 一定要有這行！結尾不能省略！
+          # 推送到 Hugging Face Space
+          git remote add hf https://user:${HF_TOKEN}@huggingface.co/spaces/wan-yun/simulated-patient-chat || true
+          git push hf HEAD:main --force
