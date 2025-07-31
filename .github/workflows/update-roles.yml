@@ -15,20 +15,20 @@ jobs:
       contents: write
 
     steps:
-      # 步驟 1: 拉取儲存庫的最新程式碼
+      # 1. 拉取儲存庫的最新程式碼
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 步驟 2: 從 Google Drive 下載最新的 roles.json 檔案
+      # 2. 從 Google Drive 下載最新的 roles.json 檔案
       - name: Download roles.json from Google Drive
         run: |
           curl -L -o roles.json 'https://drive.google.com/uc?export=download&id=19Qa3RRQXOJBKMPsvQB994ig0UJSpQkJP'
 
-      # 步驟 3: 讓腳本檔案擁有執行權限
+      # 3. 讓腳本檔案擁有執行權限
       - name: Make script executable
         run: chmod +x ./update_and_push.sh
 
-      # 步驟 4: 執行提交與推送的腳本
+      # 4. 執行提交與推送的腳本
       - name: Run commit and push script
         env:
           # 將 HF_TOKEN 作為環境變數傳遞給腳本
