@@ -26,18 +26,10 @@ jobs:
           git add roles.json
           if ! git diff --staged --quiet; then
             git commit -m "Auto update roles.json from Google Drive"
-            git pull --rebase
             git push
           else
             echo "No changes to commit."
           fi
-
-      - name: Push to Hugging Face Space
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          git remote add hf https://user:$HF_TOKEN@huggingface.co/spaces/wan-yun/simulated-patient-chat || true
-          git push hf HEAD:main
 
       - name: Push to Hugging Face Space
         env:
