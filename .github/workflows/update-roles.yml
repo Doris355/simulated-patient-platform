@@ -1,43 +1,66 @@
 # 工作流程名稱
 name: Update roles.json and push to Hugging Face
 
+# 觸發工作流程的事件
 on:
+  # 允許手動從 GitHub Actions 頁面觸發
   workflow_dispatch:
+  # 允許透過 repository dispatch 事件觸發
   repository_dispatch:
     types: [update-roles-json]
 
+# 定義工作
 jobs:
   download-and-update:
+    # 指定運行的虛擬環境
     runs-on: ubuntu-latest
+    # 設定工作所需的權限
     permissions:
+      # 需要寫入權限才能將變更推送回儲存庫
       contents: write
 
+    # 工作中的步驟
     steps:
+      # 步驟 1: 拉取儲存庫的最新程式碼
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 步驟 2: 從 Google Drive 下載最新的 roles.json 檔案
       - name: Download roles.json from Google Drive
         run: |
           curl -L -o roles.json 'https://drive.google.com/uc?export=download&id=19Qa3RRQXOJBKMPsvQB994ig0UJSpQkJP'
 
+      # 步驟 3: 提交變更並推送到 GitHub 和 Hugging Face
       - name: Commit and Push changes
         env:
+          # 從 Secrets 讀取 Hugging Face 的存取權杖
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
+          # --- Git 設定 ---
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
+          
+          # --- 檢查是否有變更 ---
           git add roles.json
-
+          
+          # `if ! git diff --staged --quiet; then`
+          # 這是一個關鍵的檢查。它會判斷是否有任何檔案被加入暫存區。
+          # 如果有變更，這個 if 條件就會成立，並執行裡面的程式碼。
           if ! git diff --staged --quiet; then
             echo "偵測到檔案變更，正在提交並推送..."
-
+            
             git commit -m "Auto update roles.json from Google Drive"
-            git pull --rebase origin main
             git push
-
+            
+            # --- 推送到 Hugging Face ---
+            # `|| true` 的作用是，如果遠端儲存庫已經存在，`git remote add` 會失敗，但 `|| true` 會讓腳本繼續執行而不是報錯。
             git remote add hf https://user:$HF_TOKEN@huggingface.co/spaces/wan-yun/simulated-patient-chat || true
+            
+            # `HEAD:main` 表示將本地的最新 commit 推送到遠端的 main 分支。
+            # `--force` 確保遠端的分支會被本地的狀態覆蓋，這在自動化腳本中很常用。
             git push hf HEAD:main --force
+            
           else
             echo "沒有偵測到檔案變更，無需提交。"
           fi
+          # `fi` 是 if 區塊的結束標記，絕對不能缺少，否則就會出現 "unexpected end of file" 錯誤。
