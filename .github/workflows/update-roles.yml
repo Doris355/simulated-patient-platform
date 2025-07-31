@@ -1,13 +1,10 @@
-# 工作流程名稱
 name: Update roles.json and push to Hugging Face
 
-# 觸發工作流程的事件
 on:
   workflow_dispatch:
   repository_dispatch:
     types: [update-roles-json]
 
-# 定義工作
 jobs:
   download-and-update:
     runs-on: ubuntu-latest
@@ -15,22 +12,29 @@ jobs:
       contents: write
 
     steps:
-      # 1. 拉取儲存庫的最新程式碼
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. 從 Google Drive 下載最新的 roles.json 檔案
       - name: Download roles.json from Google Drive
         run: |
           curl -L -o roles.json 'https://drive.google.com/uc?export=download&id=19Qa3RRQXOJBKMPsvQB994ig0UJSpQkJP'
 
-      # 3. 讓腳本檔案擁有執行權限
-      - name: Make script executable
-        run: chmod +x ./update_and_push.sh
-
-      # 4. 執行提交與推送的腳本
-      - name: Run commit and push script
+      - name: Commit and Push changes
         env:
-          # 將 HF_TOKEN 作為環境變數傳遞給腳本
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: ./update_and_push.sh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add roles.json
+
+          if ! git diff --staged --quiet; then
+            echo "有變更，提交並推送..."
+            git commit -m "Auto update roles.json from Google Drive"
+            git push
+
+            git remote add hf https://user:$HF_TOKEN@huggingface.co/spaces/wan-yun/simulated-patient-chat || true
+            git push hf HEAD:main --force
+          else
+            echo "沒有變更，不提交。"
+          fi
