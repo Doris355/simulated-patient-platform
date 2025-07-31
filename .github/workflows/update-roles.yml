@@ -1,40 +1,53 @@
-name: Update roles.json from Google Drive and push to Hugging Face
+name: Update roles.json and push to Hugging Face
 
 on:
+  # Allows triggering the workflow manually from the Actions tab
+  workflow_dispatch:
+  # Allows triggering the workflow via a repository event
   repository_dispatch:
     types: [update-roles-json]
-  workflow_dispatch:
 
 jobs:
   download-and-update:
     runs-on: ubuntu-latest
     permissions:
+      # Required to push changes back to the repository
       contents: write
 
     steps:
+      # 步驟 1: 拉取最新的程式碼
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 步驟 2: 從 Google Drive 下載最新的 roles.json
       - name: Download roles.json from Google Drive
         run: |
           curl -L -o roles.json 'https://drive.google.com/uc?export=download&id=19Qa3RRQXOJBKMPsvQB994ig0UJSpQkJP'
 
-      - name: Commit updated roles.json
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add roles.json
-          if ! git diff --staged --quiet; then
-            git commit -m "Auto update roles.json from Google Drive"
-            git pull --rebase origin main
-            git push
-          else
-            echo "No changes to commit."
-          fi
-
-      - name: Push to Hugging Face Space
+      # 步驟 3: 提交 roles.json 的變更並推送到 GitHub 和 Hugging Face
+      - name: Commit and Push changes
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git remote add hf https://user:$HF_TOKEN@huggingface.co/spaces/wan-yun/simulated-patient-chat || true
-          git push hf HEAD:main
+          # 設定 Git 使用者資訊
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # 將 roles.json 加入暫存區
+          git add roles.json
+          
+          # 檢查是否有變更，如果有，才執行提交和推送
+          if ! git diff --staged --quiet; then
+            echo "Changes detected. Committing and pushing..."
+            git commit -m "Auto update roles.json from Google Drive"
+            
+            # 推送到 GitHub
+            git push
+            
+            # 推送到 Hugging Face Space
+            # 如果遠端已存在，則忽略錯誤
+            git remote add hf https://user:$HF_TOKEN@huggingface.co/spaces/wan-yun/simulated-patient-chat || true
+            git push hf HEAD:main
+          else
+            echo "No changes to commit."
+          fi
