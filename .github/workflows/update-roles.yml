@@ -20,9 +20,12 @@ jobs:
           gdown "https://drive.google.com/uc?id=${{ secrets.GDRIVE_FILE_ID }}" -O roles.json
 
       - name: Commit and push updated roles.json
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          REPO: ${{ github.repository }}
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add roles.json
           git commit -m "Auto update roles.json from Google Drive" || echo "No changes"
-          git push "https://x-access-token:${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git" HEAD:main
+          git push https://x-access-token:${GH_PAT}@github.com/${REPO}.git HEAD:main
