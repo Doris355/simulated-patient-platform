@@ -16,3 +16,4 @@ llama-cpp-python>=0.2.56  # 視版本需求調整
 # 若要處理 dotenv 檔案（可選）
 python-dotenv
 cffi==1.15.1
+huggingface-hub
