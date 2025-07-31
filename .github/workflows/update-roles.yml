@@ -37,4 +37,4 @@ jobs:
             git push hf HEAD:main --force
           else
             echo "沒有變更，不提交。"
-          fi
+          fi  # ← ✅ 一定要有這行！結尾不能省略！
