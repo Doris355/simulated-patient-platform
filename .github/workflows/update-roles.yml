@@ -16,15 +16,14 @@ jobs:
 
       - name: Download roles.json from Google Drive using GDRIVE_FILE_ID
         run: |
-          gdown https://drive.google.com/uc?id=${{ secrets.GDRIVE_FILE_ID }} -O roles.json
+          gdown https://drive.google.com/uc?id=${{ 151mtkzT-Kk27svfbv8S_eP_v-7LUXZmp }} -O roles.json
 
-      -- name: Commit and push updated roles.json
-  env:
-    GH_PAT: ${{ 151mtkzT-Kk27svfbv8S_eP_v-7LUXZmp }}  # 你在 Secrets 裡的 Personal Access Token
-  run: |
-    git config user.name "github-actions"
-    git config user.email "actions@github.com"
-    git add roles.json
-    git commit -m "Auto update roles.json from Google Drive" || echo "No changes to commit"
-    git push https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}.git HEAD:main
-
+      - name: Commit and push updated roles.json
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add roles.json
+          git commit -m "Auto update roles.json from Google Drive" || echo "No changes"
+          git push https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}.git HEAD:main
