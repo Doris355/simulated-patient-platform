@@ -1,5 +1,17 @@
+# 前端介面
 gradio>=4.0
+
+# 資料處理與試算表支援
 pandas
-openpyxl
+openpyxl  # 讀取 .xlsx 試算表
+gspread   # 讀取 Google 試算表（如需整合）
+oauth2client  # Google Sheets API 驗證
+
+# JSON 與網路操作
 requests
-llama-cpp-python
+
+# 本地語言模型支援（選用）
+llama-cpp-python>=0.2.56  # 視版本需求調整
+
+# 若要處理 dotenv 檔案（可選）
+python-dotenv
