@@ -2,3 +2,4 @@ gradio>=4.0
 pandas
 openpyxl
 requests
+llama-cpp-python
