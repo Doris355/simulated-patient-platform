@@ -7,26 +7,40 @@ on:
 jobs:
   download-and-update:
     runs-on: ubuntu-latest
+    
+    # 1. Grant write permissions to the GITHUB_TOKEN for this job
+    permissions:
+      contents: write
 
     steps:
+      # 2. Use the latest version of the checkout action
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Install gdown
+      # 3. Best practice: set up a Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
         run: pip install gdown
 
       - name: Download roles.json from Google Drive
         run: |
+          # Use a fake ID for the example. Replace with your actual file ID.
           gdown "https://drive.google.com/uc?id=1A2B3C4D5E6F7G8H9I" -O roles.json
 
-
+      # 4. The commit and push step is now simpler and more secure
       - name: Commit and push updated roles.json
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-          REPO: ${{ github.repository }}
         run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add roles.json
-          git commit -m "Auto update roles.json from Google Drive" || echo "No changes"
-          git push https://x-access-token:${GH_PAT}@github.com/${REPO}.git HEAD:main
+          # Check for changes before committing to avoid an error
+          if ! git diff --staged --quiet; then
+            git commit -m "Auto update roles.json from Google Drive"
+            git push
+          else
+            echo "No changes to commit."
+          fi
