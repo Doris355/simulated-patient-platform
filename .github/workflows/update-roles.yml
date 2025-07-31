@@ -6,18 +6,20 @@ on:
   workflow_dispatch:
 
 jobs:
-  download-and-update:
+  update-and-push:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Download roles.json from Google Drive
-        run: curl -L -o roles.json 'https://drive.google.com/uc?export=download&id=19Qa3RRQXOJBKMPsvQB994ig0UJSpQkJP'
+        run: |
+          curl -L -o roles.json 'https://drive.google.com/uc?export=download&id=19Qa3RRQXOJBKMPsvQB994ig0UJSpQkJP'
 
-      - name: Commit and push updated roles.json to GitHub
+      - name: Commit updated roles.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -27,26 +29,14 @@ jobs:
             git push
           else
             echo "No changes to commit."
-
-  push-to-huggingface:
-    needs: download-and-update
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout this repo
-        uses: actions/checkout@v4
-
-      - name: Clone Hugging Face Space repo
+      
+      - name: Push to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git clone https://huggingface.co/spaces/wan-yun/simulated-patient-chat hf-space
-          cp roles.json hf-space/roles.json
+          git remote add hf https://huggingface.co/spaces/wan-yun/simulated-patient-chat
+          git push https://user:$HF_TOKEN@huggingface.co/spaces/wan-yun/simulated-patient-chat HEAD:main
 
-      - name: Commit and push to Hugging Face
-        run: |
-          cd hf-space
-          git config user.name github-actions
-          git config user.email actions@github.com
-          git add roles.json
-          git commit -m "Update roles.json from GitHub Action" || echo "No changes"
           git push https://$HF_TOKEN@huggingface.co/spaces/wan-yun/simulated-patient-chat HEAD:main
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
