@@ -14,7 +14,7 @@ jobs:
       - name: Install gdown
         run: pip install gdown
 
-      - name: Download roles.json from Google Drive using GDRIVE_FILE_ID
+      - name: Download roles.json using GDRIVE_FILE_ID
         run: |
           gdown https://drive.google.com/uc?id=${{ secrets.GDRIVE_FILE_ID }} -O roles.json
 
