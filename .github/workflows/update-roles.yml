@@ -22,7 +22,7 @@ jobs:
 
       # 改用更穩定、內建的 curl 指令來下載檔案
       - name: Download roles.json from Google Drive
-        run: curl -L -o roles.json 'https://drive.google.com/uc?export=download&id=1K8A1bRjyozotA4RjyvX5iQ1-isH2-KA'
+        run: curl -L -o roles.json '1K8A1bRjyozotA4RjyvX5iQ1-isH2-KA'
 
       - name: Commit and push updated roles.json
         run: |
