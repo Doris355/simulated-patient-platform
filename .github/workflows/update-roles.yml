@@ -17,7 +17,8 @@ jobs:
 
       - name: Download roles.json from Google Drive
         run: |
-          gdown "https://drive.google.com/uc?id=${{ secrets.GDRIVE_FILE_ID }}" -O roles.json
+          gdown "https://drive.google.com/uc?id=1A2B3C4D5E6F7G8H9I" -O roles.json
+
 
       - name: Commit and push updated roles.json
         env:
