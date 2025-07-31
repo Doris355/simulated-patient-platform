@@ -1,0 +1,27 @@
+name: Update roles.json from Google Drive
+
+on:
+  repository_dispatch:
+    types: [update-roles-json]
+
+jobs:
+  download-and-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install gdown
+        run: pip install gdown
+
+      - name: Download roles.json from Google Drive
+        run: |
+          gdown https://drive.google.com/uc?id=${{ secrets.GDRIVE_FILE_ID }} -O roles.json
+
+      - name: Commit and push updated roles.json
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add roles.json
+          git commit -m "Auto update roles.json from Google Drive"
+          git push
