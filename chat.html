@@ -11,7 +11,7 @@
   <script>
     const params = new URLSearchParams(window.location.search);
     const role = params.get("role") || "default";
-    const spaceURL = "https://huggingface.co/spaces/你的帳號/你的Space名稱"; // 替換成你自己的 Space
+    const spaceURL = "https://huggingface.co/spaces/wan-yun/simulated-patient-chat"; // 替換成你自己的 Space
 
     document.getElementById("chat-frame").src = `${spaceURL}?role=${role}`;
   </script>
