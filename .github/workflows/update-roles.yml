@@ -29,7 +29,7 @@ jobs:
       - name: Download roles.json from Google Drive
         run: |
           # Use a fake ID for the example. Replace with your actual file ID.
-          gdown "https://drive.google.com/uc?id=1A2B3C4D5E6F7G8H9I" -O roles.json
+          gdown "https://drive.google.com/file/d/1hwQrH3aV6Q5WrJqI9zkdL4P_o3BHSz_x/view?usp=sharing" -O roles.json
 
       # 4. The commit and push step is now simpler and more secure
       - name: Commit and push updated roles.json
