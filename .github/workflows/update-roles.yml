@@ -20,9 +20,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 改用更穩定、內建的 curl 指令來下載檔案
+      # 使用最穩定、內建的 curl 指令，並搭配您提供的正確檔案 ID
       - name: Download roles.json from Google Drive
-        run: curl -L -o roles.json 'https://drive.google.com/file/d/1v8lUqWoZbGPPORE3_tIjkZLYRMQWowJa/view?usp=sharing'
+        run: curl -L -o roles.json 'https://drive.google.com/uc?export=download&id=1v8lUqWoZbGPPORE3_tIjkZLYRMQWowJa'
 
       - name: Commit and push updated roles.json
         run: |
