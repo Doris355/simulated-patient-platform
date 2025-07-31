@@ -30,7 +30,10 @@ role_names = [r["name"] for r in roles] if roles else []
 llm = None
 def init_model():
     global llm
-    if llm is None:
+    if llm is not None:
+        return
+    try:
+        print("🚀 [Init] 開始從 Hugging Face Hub 下載模型...")
         model_dir = snapshot_download(
             repo_id=GGUF_MODEL_REPO,
             allow_patterns=GGUF_FILENAME,
@@ -38,11 +41,21 @@ def init_model():
             local_dir_use_symlinks=False
         )
         model_path = os.path.join(model_dir, GGUF_FILENAME)
+        print(f"✅ [Init] 模型下載完成，路徑為：{model_path}")
+
+        print("⚙️ [Init] 正在初始化 Llama 模型...")
         llm = Llama(
             model_path=model_path,
             n_gpu_layers=-1,
-            verbose=False
+            verbose=True  # 可選開關更多內部資訊
         )
+        print("✅ [Init] 模型初始化完成！")
+
+    except Exception as e:
+        print("❌ [Init] 模型初始化失敗，錯誤如下：")
+        print(str(e))
+        raise  # 重新拋出錯誤讓 Hugging Face Log 捕捉到
+
 
 # === 模擬病人回應 ===
 def simulate_response(user_input, role_name):
