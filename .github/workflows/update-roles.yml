@@ -16,7 +16,7 @@ jobs:
 
       - name: Download roles.json from Google Drive
         # ✅ 把下面這串 ID 換成您在試算表上執行新腳本後，得到的那個檔案 ID
-        run: curl -L -o roles.json 'https://drive.google.com/file/d/19Qa3RRQXOJBKMPsvQB994ig0UJSpQkJP/view?usp=sharing'
+        run: curl -L -o roles.json '19Qa3RRQXOJBKMPsvQB994ig0UJSpQkJP'
 
       - name: Commit and push updated roles.json
         run: |
