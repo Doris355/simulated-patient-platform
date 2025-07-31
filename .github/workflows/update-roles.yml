@@ -26,8 +26,8 @@ jobs:
       - name: Install dependencies
         run: pip install gdown
 
-      - name: Download roles.json from Google Drive
-        run: gdown --fuzzy "1K8A1bRjyozotA4RjyvX5iQ1-isH2-KA" -O roles.json
+      - name: Download roles.json from Google Drive (using curl)
+        run: curl -L -o roles.json 'https://drive.google.com/uc?export=download&id=1K8A1bRjyozotA4RjyvX5iQ1-isH2-KA'
 
       # 4. The commit and push step is now simpler and more secure
       - name: Commit and push updated roles.json
