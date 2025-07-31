@@ -14,9 +14,9 @@ jobs:
       - name: Install gdown
         run: pip install gdown
 
-      - name: Download roles.json from Google Drive
+      - name: Download roles.json using --fuzzy
         run: |
-          gdown https://drive.google.com/uc?id=151mtkzT-Kk27svfbv8S_eP_v-7LUXZmp -O roles.json
+          gdown --fuzzy "https://drive.google.com/file/d/151mtkzT-Kk27svfbv8S_eP_v-7LUXZmp/view?usp=sharing" -O roles.json
 
       - name: Commit and push updated roles.json
         run: |
