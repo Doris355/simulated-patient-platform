@@ -29,7 +29,7 @@ jobs:
       - name: Download roles.json from Google Drive
         run: |
           # 將檔案 ID 換成這個新的、確認有效的 ID
-          gdown "https://drive.google.com/file/d/1KBATqBRKyzxotA4RjvLVS1Q1-asH2-KA/view?usp=drive_link" -O roles.json
+          gdown "1K8A1bRjyozotA4RjyvX5iQ1-isH2-KA" -O roles.json
 
       # 4. The commit and push step is now simpler and more secure
       - name: Commit and push updated roles.json
