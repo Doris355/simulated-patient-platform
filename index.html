@@ -1,17 +1,24 @@
-<!-- index.html -->
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>模擬病人訓練平台</title>
+  <meta charset="UTF-8">
+  <title>模擬病人角色選擇</title>
 </head>
 <body>
-  <h1>歡迎使用模擬病人互動平台</h1>
-  <p>請選擇角色並開始對話：</p>
-  <ul>
-    <li><a href="https://huggingface.co/spaces/你的Space網址">🧒 張小明（青少年憂鬱）</a></li>
-    <li><a href="https://huggingface.co/spaces/你的Space網址">👩 李佳慧（中年焦慮）</a></li>
-  </ul>
+  <h1>請選擇一位角色開始模擬會談</h1>
+  <ul id="role-list"></ul>
+
+  <script>
+    fetch("roles.json")
+      .then(response => response.json())
+      .then(roles => {
+        const list = document.getElementById("role-list");
+        roles.forEach(role => {
+          const li = document.createElement("li");
+          li.innerHTML = `<a href="chat.html?role=${role.id}">${role.name}（${role.occupation}）</a> - ${role.description}`;
+          list.appendChild(li);
+        });
+      });
+  </script>
 </body>
 </html>
