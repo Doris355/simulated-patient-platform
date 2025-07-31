@@ -26,7 +26,7 @@ jobs:
           git add roles.json
           if ! git diff --staged --quiet; then
             git commit -m "Auto update roles.json from Google Drive"
-            git pull --rebase origin main     # ⭐️ 加這一行
+            git pull --rebase origin main --no-edit    # ⭐️ 加這一行
             git push
           else
             echo "No changes to commit."
