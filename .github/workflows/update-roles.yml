@@ -6,19 +6,22 @@ on:
   workflow_dispatch:
 
 jobs:
-  update-and-push:
+  download-and-push:
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
+      # 1️⃣ Checkout GitHub repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ Download roles.json from Google Drive
       - name: Download roles.json from Google Drive
         run: |
-          curl -L -o roles.json 'https://drive.google.com/uc?export=download&id=19Qa3RRQXOJBKMPsvQB994ig0UJSpQkJP'
+          curl -L -o roles.json 'https://drive.google.com/uc?export=download&id=你的檔案ID'
 
+      # 3️⃣ Commit to GitHub
       - name: Commit updated roles.json
         run: |
           git config user.name "github-actions[bot]"
@@ -26,18 +29,16 @@ jobs:
           git add roles.json
           if ! git diff --staged --quiet; then
             git commit -m "Auto update roles.json from Google Drive"
-            git pull --rebase origin main --no-edit    # ⭐️ 加這一行
+            git pull --rebase origin main
             git push
           else
             echo "No changes to commit."
-      
+          fi
+
+      # 4️⃣ Push to Hugging Face Space
       - name: Push to Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git remote add hf https://huggingface.co/spaces/wan-yun/simulated-patient-chat
-          git push https://user:$HF_TOKEN@huggingface.co/spaces/wan-yun/simulated-patient-chat HEAD:main
-
-          git push https://$HF_TOKEN@huggingface.co/spaces/wan-yun/simulated-patient-chat HEAD:main
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          git remote add hf https://user:$HF_TOKEN@huggingface.co/spaces/wan-yun/simulated-patient-chat || true
+          git push hf HEAD:main
