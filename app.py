@@ -2,20 +2,20 @@ import gradio as gr
 import json
 import os
 import sys
-print("🚀 App 正在啟動..."); sys.stdout.flush()
-
 from datetime import datetime
 from fpdf import FPDF
-from huggingface_hub import snapshot_download
 from llama_cpp import Llama
+
+print("🚀 App 正在啟動..."); sys.stdout.flush()
 
 # === 路徑與模型設定 ===
 ROLES_PATH = "roles.json"
 LOGS_DIR = "logs"
-GGUF_MODEL_REPO = "TheBloke/MythoMax-L2-13B-GGUF"
 GGUF_FILENAME = "mythomax-l2-13b.Q4_K_M.gguf"
+LOCAL_MODEL_PATH = f"files/{GGUF_FILENAME}"
+HF_MODEL_REPO = "TheBloke/MythoMax-L2-13B-GGUF"
 
-# === 準備 logs 資料夾 ===
+# === 建立 logs 資料夾（如無）===
 if not os.path.exists(LOGS_DIR):
     os.makedirs(LOGS_DIR)
 
@@ -29,36 +29,38 @@ def load_roles():
 roles = load_roles()
 role_names = [r["name"] for r in roles] if roles else []
 
-# === 初始化 LLM 模型 ===
+# === 初始化模型 ===
 llm = None
 def init_model():
     global llm
     if llm is not None:
         return
-    try:
-        print("🚀 [Init] 開始從 Hugging Face Hub 下載模型...")
-        model_dir = snapshot_download(
-            repo_id=GGUF_MODEL_REPO,
-            allow_patterns=GGUF_FILENAME,
-            local_dir="models",
-            local_dir_use_symlinks=False
-        )
-        model_path = os.path.join(model_dir, GGUF_FILENAME)
-        print(f"✅ [Init] 模型下載完成，路徑為：{model_path}")
 
-        print("⚙️ [Init] 正在初始化 Llama 模型...")
+    try:
+        if os.path.exists(LOCAL_MODEL_PATH):
+            print(f"🔍 [Init] 使用本地模型：{LOCAL_MODEL_PATH}")
+            model_path = LOCAL_MODEL_PATH
+        else:
+            print("☁️ [Init] 本地模型不存在，從 Hugging Face Hub 下載...")
+            from huggingface_hub import snapshot_download
+            model_dir = snapshot_download(
+                repo_id=HF_MODEL_REPO,
+                allow_patterns=GGUF_FILENAME,
+                local_dir="models",
+                local_dir_use_symlinks=False
+            )
+            model_path = os.path.join(model_dir, GGUF_FILENAME)
+
+        print(f"⚙️ [Init] 正在載入 Llama 模型：{model_path}")
         llm = Llama(
             model_path=model_path,
             n_gpu_layers=-1,
-            verbose=True  # 可選開關更多內部資訊
+            verbose=True
         )
         print("✅ [Init] 模型初始化完成！")
-
     except Exception as e:
-        print("❌ [Init] 模型初始化失敗，錯誤如下：")
-        print(str(e))
-        raise  # 重新拋出錯誤讓 Hugging Face Log 捕捉到
-
+        print("❌ [Init] 模型初始化失敗：", str(e))
+        raise
 
 # === 模擬病人回應 ===
 def simulate_response(user_input, role_name):
@@ -98,14 +100,13 @@ def export_dialogue_pdf(student_name):
     pdf.ln(5)
     for m in dialogue:
         role = "學生" if m["role"] == "student" else "模擬病人"
-        text = f"{role}: {m['text']}"
-        pdf.multi_cell(0, 10, text)
+        pdf.multi_cell(0, 10, f"{role}: {m['text']}")
         pdf.ln(1)
     output_path = f"{LOGS_DIR}/{student_name}_dialogue.pdf"
     pdf.output(output_path)
     return output_path
 
-# === 對話流程處理 ===
+# === 對話流程 ===
 def chat(student_name, role_name, user_input, history):
     if not student_name:
         return history, "❌ 請輸入學生姓名"
@@ -117,14 +118,14 @@ def chat(student_name, role_name, user_input, history):
     save_conversation(student_name, role_name, history)
     return history, ""
 
-# === 顯示對話紀錄 ===
+# === 顯示對話 ===
 def display_chat(history):
     return "\n".join([
-        f"👩‍🎓 {m['text']}" if m['role'] == "student" else f"🧑‍⚕️ {m['text']}"
+        f"👩‍🎓 {m['text']}" if m["role"] == "student" else f"🧑‍⚕️ {m['text']}"
         for m in history
     ])
 
-# === 載入學生紀錄 ===
+# === 載入紀錄 ===
 def load_student_history(student_name):
     filepath = f"{LOGS_DIR}/student_{student_name}.json"
     if not os.path.exists(filepath):
@@ -133,14 +134,14 @@ def load_student_history(student_name):
         data = json.load(f)
     return data.get("dialogue", []), "✅ 成功載入"
 
-# === 顯示角色清單 ===
+# === 顯示角色 ===
 def list_roles():
     return "\n\n".join(
         f"🧑‍⚕️ {r['name']}（{r['age']}歲, {r['gender']}）\n職業：{r['occupation']}\n描述：{r['description']}"
         for r in roles
     )
 
-# === Gradio 介面 ===
+# === Gradio UI ===
 with gr.Blocks() as demo:
     gr.Markdown("# 🧠 模擬病人角色對話系統")
 
