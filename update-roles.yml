@@ -1,45 +1,49 @@
-name: Update roles.json and push to Hugging Face
+name: Update Hugging Face Space content
 
 on:
-  workflow_dispatch:
-  repository_dispatch:
-    types: [update-roles-json]
+  push:
+    paths:
+      - 'roles.json'
+      - 'files/*.gguf'
 
 jobs:
-  download-and-update:
+  update:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
     steps:
-      # ✅ 修正：用 fetch-depth: 0 避免 shallow update 被拒絕
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: Checkout Repo
+        uses: actions/checkout@v3
 
-      # 下載 roles.json
-      - name: Download roles.json from Google Drive
-        run: |
-          curl -L -o roles.json 'https://drive.google.com/uc?export=download&id=19Qa3RRQXOJBKMPsvQB994ig0UJSpQkJP'
+      - name: Install Dependencies
+        run: pip install -U huggingface_hub
 
-      # 提交並推送到 GitHub + Hugging Face
-      - name: Commit and Push changes
+      - name: Login to Hugging Face
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: huggingface-cli login --token "$HF_TOKEN"
+
+      - name: Clone Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          huggingface-cli repo clone wan-yun/simulated-patient-chat --type=space space-dir
 
-          git add roles.json
+      - name: Update roles.json if changed
+        run: |
+          cp roles.json space-dir/roles.json || true
+          cd space-dir
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add roles.json || true
 
-          if ! git diff --staged --quiet; then
-            echo "有變更，提交並推送..."
-            git commit -m "Auto update roles.json from Google Drive"
-            git push
+      - name: Upload GGUF models if changed
+        run: |
+          mkdir -p space-dir/files
+          cp files/*.gguf space-dir/files/ 2>/dev/null || true
+          cd space-dir
+          git add files/*.gguf || true
 
-            git remote add hf https://user:$HF_TOKEN@huggingface.co/spaces/wan-yun/simulated-patient-chat || true
-            git push hf HEAD:main --force
-          else
-            echo "沒有變更，不提交。"
-          fi
+      - name: Commit and Push
+        run: |
+          cd space-dir
+          git commit -m "🤖 Auto update roles.json and/or upload gguf" || echo "Nothing to commit"
+          git push
