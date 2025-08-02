@@ -16,7 +16,9 @@ jobs:
         run: pip install -U huggingface_hub
 
       - name: Debug local roles.json checksum
-        run: sha256sum roles.json || true
+        run: |
+          echo "🔍 Calculating SHA256 of local roles.json"
+          sha256sum roles.json || true
 
       - name: Clone Hugging Face Space (non-interactive)
         run: |
@@ -27,7 +29,9 @@ jobs:
 
       - name: Debug remote roles.json checksum
         run: |
+          echo "🔍 Calculating SHA256 of remote roles.json"
           sha256sum space-dir/roles.json || true
+          echo "🔍 Comparing local and remote roles.json"
           diff -u roles.json space-dir/roles.json || echo "[INFO] roles.json differs or is new"
 
       - name: Copy updated roles.json
@@ -40,7 +44,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions@github.com"
           git add -f roles.json
-          git commit -m "Auto update roles.json from GitHub Action" || echo "No changes to commit"
+          git diff --cached --quiet && echo "✅ No changes to commit" && exit 0
+          git commit -m "Auto update roles.json from GitHub Action"
           git push origin main
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
