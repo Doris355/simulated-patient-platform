@@ -29,7 +29,7 @@ jobs:
         run: |
           cp roles.json space-dir/roles.json || true
           cd space-dir
-          git config user.name "github-actions"
+          git config user.name "github-actions[bot]"
           git config user.email "github-actions@github.com"
           git add roles.json || true
 
@@ -44,4 +44,5 @@ jobs:
         run: |
           cd space-dir
           git commit -m "🤖 Auto update roles.json and/or upload gguf" || echo "Nothing to commit"
+          git pull --rebase origin main || echo "Already up to date"
           git push
