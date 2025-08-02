@@ -15,37 +15,31 @@ jobs:
       - name: Install Dependencies
         run: pip install -U huggingface_hub
 
+      - name: Debug local roles.json checksum
+        run: sha256sum roles.json || true
+
       - name: Clone Hugging Face Space (non-interactive)
         run: |
+          set -x
           git clone https://huggingface_hub_token:${HF_TOKEN}@huggingface.co/spaces/wan-yun/simulated-patient-gguf-v2 space-dir
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
-      - name: Debug diff before copy
+      - name: Debug remote roles.json checksum
         run: |
-          echo "----- roles.json (local) -----"
-          cat roles.json
-          echo "----- roles.json (remote before copy) -----"
-          cat space-dir/roles.json || echo "space-dir/roles.json not found"
+          sha256sum space-dir/roles.json || true
+          diff -u roles.json space-dir/roles.json || echo "[INFO] roles.json differs or is new"
 
-      - name: Copy roles.json to space directory
-        run: |
-          cp roles.json space-dir/roles.json || true
-
-      - name: Debug diff after copy
-        run: |
-          echo "===== git status ====="
-          cd space-dir
-          git status
-          echo "===== git diff ====="
-          git diff roles.json || true
+      - name: Copy updated roles.json
+        run: cp roles.json space-dir/roles.json
 
       - name: Commit and Push if changed
         run: |
+          set -x
           cd space-dir
           git config user.name "github-actions[bot]"
           git config user.email "github-actions@github.com"
-          git add roles.json
+          git add -f roles.json
           git commit -m "Auto update roles.json from GitHub Action" || echo "No changes to commit"
           git push origin main
         env:
