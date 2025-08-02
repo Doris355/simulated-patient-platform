@@ -21,14 +21,32 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
-      - name: Update roles.json if changed
+      - name: Debug diff before copy
+        run: |
+          echo "----- roles.json (local) -----"
+          cat roles.json
+          echo "----- roles.json (remote before copy) -----"
+          cat space-dir/roles.json || echo "space-dir/roles.json not found"
+
+      - name: Copy roles.json to space directory
         run: |
           cp roles.json space-dir/roles.json || true
+
+      - name: Debug diff after copy
+        run: |
+          echo "===== git status ====="
+          cd space-dir
+          git status
+          echo "===== git diff ====="
+          git diff roles.json || true
+
+      - name: Commit and Push if changed
+        run: |
           cd space-dir
           git config user.name "github-actions[bot]"
           git config user.email "github-actions@github.com"
-          git add roles.json || true
-          git diff --cached --quiet || git commit -m "Auto update roles.json from GitHub Action"
+          git add roles.json
+          git commit -m "Auto update roles.json from GitHub Action" || echo "No changes to commit"
           git push origin main
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
