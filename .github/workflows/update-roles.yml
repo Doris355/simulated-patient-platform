@@ -1,44 +1,46 @@
 name: Update Hugging Face Space content
 
 on:
-  repository_dispatch:
-    types: [update-roles-json]
+  push:
+    paths:
+      - 'roles.json'
+      - 'files/*.gguf'
 
 jobs:
   update:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      - name: Install Dependencies
+      - name: Install Hugging Face CLI
         run: pip install -U huggingface_hub
 
-      - name: Login to Hugging Face
+      - name: Clone Hugging Face Space repo
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: huggingface-cli login --token "$HF_TOKEN"
-
-      - name: Clone Hugging Face Space
-          env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-        git clone https://huggingface.co/spaces/wan-yun/simulated-patient-chat space-dir
-        cd space-dir
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions@github.com"
+          git clone https://huggingface.co/spaces/wan-yun/simulated-patient-chat space-dir
+          cd space-dir
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions@github.com"
 
-
-      - name: Update roles.json if changed
+      - name: Copy roles.json
         run: |
           cp roles.json space-dir/roles.json || true
-          cd space-dir
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add roles.json || true
+
+      - name: Copy GGUF models (if any)
+        run: |
+          mkdir -p space-dir/files
+          cp files/*.gguf space-dir/files/ 2>/dev/null || true
 
       - name: Commit and Push
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           cd space-dir
-          git commit -m "🤖 Auto update roles.json via webhook" || echo "Nothing to commit"
+          git add roles.json files/*.gguf || true
+          git commit -m "🤖 Auto update roles.json and/or upload gguf" || echo "Nothing to commit"
+          git remote set-url origin https://huggingface_hub:${HF_TOKEN}@huggingface.co/spaces/wan-yun/simulated-patient-chat
           git push
