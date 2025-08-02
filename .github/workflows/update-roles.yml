@@ -20,10 +20,14 @@ jobs:
         run: huggingface-cli login --token "$HF_TOKEN"
 
       - name: Clone Hugging Face Space
-        env:
+          env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          huggingface-cli repo clone wan-yun/simulated-patient-gguf-v2 --type=space space-dir
+        git clone https://huggingface.co/spaces/wan-yun/simulated-patient-chat space-dir
+        cd space-dir
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions@github.com"
+
 
       - name: Update roles.json if changed
         run: |
