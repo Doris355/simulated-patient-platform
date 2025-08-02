@@ -17,7 +17,7 @@ jobs:
 
       - name: Clone Hugging Face Space (non-interactive)
         run: |
-          git clone https://huggingface_hub_token:${HF_TOKEN}@huggingface.co/spaces/wan-yun/simulated-patient-chat space-dir
+          git clone https://huggingface_hub_token:${HF_TOKEN}@huggingface.co/spaces/wan-yun/simulated-patient-gguf-v2 space-dir
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
@@ -30,3 +30,5 @@ jobs:
           git add roles.json || true
           git diff --cached --quiet || git commit -m "Auto update roles.json from GitHub Action"
           git push origin main
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
