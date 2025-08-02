@@ -1,8 +1,9 @@
-name: Update Hugging Face Space content
+name: Auto sync roles.json to HF Space
 
 on:
-  repository_dispatch:
-    types: [update-roles-json]
+  push:
+    paths:
+      - roles.json
 
 jobs:
   update:
@@ -12,40 +13,19 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      - name: Install Dependencies
-        run: pip install -U huggingface_hub
-
-      - name: Debug local roles.json checksum
+      - name: Clone Hugging Face Space
         run: |
-          echo "🔍 Calculating SHA256 of local roles.json"
-          sha256sum roles.json || true
-
-      - name: Clone Hugging Face Space (non-interactive)
-        run: |
-          set -x
-          git clone https://huggingface_hub_token:${HF_TOKEN}@huggingface.co/spaces/wan-yun/simulated-patient-gguf-v2 space-dir
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-
-      - name: Debug remote roles.json checksum
-        run: |
-          echo "🔍 Calculating SHA256 of remote roles.json"
-          sha256sum space-dir/roles.json || true
-          echo "🔍 Comparing local and remote roles.json"
-          diff -u roles.json space-dir/roles.json || echo "[INFO] roles.json differs or is new"
+          git clone https://huggingface_hub_token:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/wan-yun/simulated-patient-gguf-v2 space-dir
 
       - name: Copy updated roles.json
         run: cp roles.json space-dir/roles.json
 
-      - name: Commit and Push if changed
+      - name: Commit and Push to HF Space
         run: |
-          set -x
           cd space-dir
           git config user.name "github-actions[bot]"
           git config user.email "github-actions@github.com"
-          git add -f roles.json
+          git add roles.json
           git diff --cached --quiet && echo "✅ No changes to commit" && exit 0
-          git commit -m "Auto update roles.json from GitHub Action"
+          git commit -m "🚀 Sync roles.json to HF Space"
           git push origin main
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
