@@ -17,7 +17,7 @@ jobs:
 
       - name: Clone Hugging Face Space (non-interactive)
         run: |
-          git clone https://${HF_TOKEN}@huggingface.co/spaces/wan-yun/simulated-patient-chat space-dir
+          git clone https://huggingface_hub_token:${HF_TOKEN}@huggingface.co/spaces/wan-yun/simulated-patient-chat space-dir
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
