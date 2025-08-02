@@ -7,6 +7,7 @@ on:
 jobs:
   update:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -14,13 +15,11 @@ jobs:
       - name: Install Dependencies
         run: pip install -U huggingface_hub
 
-      - name: Login to Hugging Face
+      - name: Clone Hugging Face Space (non-interactive)
         run: |
-          echo "${{ secrets.HF_TOKEN }}" | hf auth login
-
-      - name: Clone Hugging Face Space (roles.json)
-        run: |
-          git clone https://huggingface.co/spaces/wan-yun/simulated-patient-chat space-dir
+          git clone https://${HF_TOKEN}@huggingface.co/spaces/wan-yun/simulated-patient-chat space-dir
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
       - name: Update roles.json if changed
         run: |
@@ -28,6 +27,6 @@ jobs:
           cd space-dir
           git config user.name "github-actions[bot]"
           git config user.email "github-actions@github.com"
-          git add roles.json
-          git commit -m "Auto update roles.json from Google Drive" || echo "No changes to commit"
+          git add roles.json || true
+          git diff --cached --quiet || git commit -m "Auto update roles.json from GitHub Action"
           git push origin main
