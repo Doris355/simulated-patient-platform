@@ -8,25 +8,23 @@ on:
 jobs:
   update:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
       - name: Clone Hugging Face Space
         run: |
-          git clone https://huggingface_hub_token:${HF_TOKEN}@huggingface.co/spaces/wan-yun/simulated-patient-gguf-v2 app/data
-
+          git clone https://huggingface_hub_token:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/wan-yun/simulated-patient-gguf-v2 space-dir
 
       - name: Copy updated roles.json
-        run: cp roles.json space-dir/roles.json
+        run: cp roles.json space-dir/app/data/roles.json
 
       - name: Commit and Push to HF Space
         run: |
           cd space-dir
           git config user.name "github-actions[bot]"
           git config user.email "github-actions@github.com"
-          git add roles.json
+          git add app/data/roles.json
           git diff --cached --quiet && echo "✅ No changes to commit" && exit 0
-          git commit -m "🚀 Sync roles.json to HF Space"
+          git commit -m "🔁 Sync roles.json to HF Space"
           git push origin main
