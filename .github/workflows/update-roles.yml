@@ -15,7 +15,8 @@ jobs:
 
       - name: Clone Hugging Face Space
         run: |
-          git clone https://huggingface_hub_token:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/wan-yun/simulated-patient-gguf-v2 space-dir
+          git clone https://huggingface_hub_token:${HF_TOKEN}@huggingface.co/spaces/wan-yun/simulated-patient-gguf-v2 app/data
+
 
       - name: Copy updated roles.json
         run: cp roles.json space-dir/roles.json
